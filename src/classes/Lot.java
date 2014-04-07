@@ -107,7 +107,6 @@ public class Lot {
      * @return 
      */
     public Joueur joueurQuiRecoitLot(Set<Joueur> hjoueur, Tairo tairo){  
-        boolean trouve = false;
         int successeur = tairo.getTairo().getTitre().getNbsceaux()-1;
         
         // On ne peut décrémenter de 1 direct car si le tairo à 4sceaux et son successeur 2, il y a problème
@@ -219,7 +218,8 @@ public class Lot {
         String reponse = new String();
         
         while(true){
-            System.out.println("\nQuelle tuile Hiérarchie voulez-vous associer à ce lot ? ");
+            System.out.println("");
+            System.out.println("Quelle tuile Hiérarchie voulez-vous associer à ce lot ? ");
             System.out.println(altitre);
             reponse = sc.nextLine();
 
@@ -248,7 +248,8 @@ public class Lot {
         reponse = ouiOuNon();
         if(reponse.equalsIgnoreCase("oui")){
             while(!fin){
-                System.out.println("\nListe des cartes troupes à donner :  " + this.alct.toString());
+                System.out.println("");
+                System.out.println("Liste des cartes troupes à donner :  " + this.alct.toString());
                 System.out.print("Nom de la carte 'Troupes' à sélectionner : ");
                 reponse = sc.nextLine();
                 
@@ -284,11 +285,13 @@ public class Lot {
         String reponse = new String();
         
         // Choix des cartes kokus à soumettre
+        System.out.println("");
         System.out.print("Voulez-vous mettre des cartes Kokus dans le lot ? ");
         reponse = ouiOuNon();
         if(reponse.equalsIgnoreCase("oui")){
             while(!fin){
-                System.out.println("\nListe des cartes Kokus à distribuer : " + this.alk.toString());
+                System.out.println("");
+                System.out.println("Liste des cartes Kokus à distribuer : " + this.alk.toString());
                 System.out.print("Indiquer le nombre de kokus qu'a la carte choisie : ");
                 reponse = sc.nextLine();
                 // Soit on arrete la saisie des cartes troupes, soit on vérifie que la carte choisie existe bien
@@ -360,7 +363,7 @@ public class Lot {
         if(this.alk.size() > 0){
         System.out.print("\nVoulez-vous supprimer une carte Koku du lot ? ");
         reponse = ouiOuNon();
-            while(!reponse.equalsIgnoreCase("fin") && !reponse.equalsIgnoreCase("non") && this.alct.size() > 0){
+            while(!reponse.equalsIgnoreCase("fin") && !reponse.equalsIgnoreCase("non") && this.alk.size() > 0){
                 do {
                     System.out.println("Cartes kokus du lot : " + this.alk.toString());
                     System.out.print("Indiquer le nombre de kokus présent sur la carte à supprimer : ");
@@ -385,10 +388,10 @@ public class Lot {
      * @param altitre ArrayList des Titres pour pouvoir effectuer des actions dessus
      * @param lot lot qui a été créé et qui est susceptible d'être modifié si non soumis
      */
-    public void soumettreLeLot(Joueur tairo, Joueur destinataire, ArrayList<Titre> altitre, Lot lot){
+    public void soumettreLeLot(ArrayList<Titre> altitre, Lot lot){
         Scanner sc = new Scanner(System.in);
         String reponse = new String();
-        String question = null;
+        String question = new String();
         
         // On boucle sur la demande de validation du lot temps que celui-ci ne l'est pas
         while(!reponse.equalsIgnoreCase("oui")){
@@ -396,34 +399,35 @@ public class Lot {
             reponse = ouiOuNon();
             
             // Si la validation se fait, on affiche alors un message pour le destinataire
-            if(reponse.equalsIgnoreCase("oui")){
-                System.out.println("\n" + destinataire.getPseudo() + ", voici le lot que " + tairo.getPseudo() + " vous propose :");
-                System.out.println(lot.toString());
-                System.out.println("\nEt voici les cartes à distribuer restantes : ");
-                System.out.println(this.toString());
-            }
-            else{
+            if(reponse.equalsIgnoreCase("non")){
                 // Sinon on lui demande s'il veut ajouter ou supprimer des cartes du lot précédemment formé
                 // et on fait le traitement en fonction de la réponse souhaitée.
                 do{
+                    question = "";
                     if(lot.getAlct().size() > 0 || lot.getAlk().size() > 0){question = " ou 'supprimer' ";}
                     System.out.println("Que voulez-vous faire, alors ? 'Ajouter'" + question + "des cartes ?");
                     reponse = sc.nextLine();
-                    if(!reponse.equalsIgnoreCase("ajouter") && !reponse.equalsIgnoreCase("supprimer")){
+                    if((!reponse.equalsIgnoreCase("ajouter") && !reponse.equalsIgnoreCase("supprimer")) || (reponse.equalsIgnoreCase("supprimer") && question.isEmpty())){
                         System.err.println("Vous devez 'ajouter'" + question + "des cartes");
                     }
-                }while(!reponse.equalsIgnoreCase("ajouter") && !reponse.equalsIgnoreCase("supprimer"));
+                }while((!reponse.equalsIgnoreCase("ajouter") && !reponse.equalsIgnoreCase("supprimer")) || (reponse.equalsIgnoreCase("supprimer") && question.isEmpty()));
 
                 // Si le tairo veut ajouter des cartes, on reprend le lot précédemment formé et on lance les fonctions choixDesCartesXXX()
                 // Sinon on retire les cartes du lot et on les remet dans le paquet de cartes piochées par le Tairo
                 if(reponse.equalsIgnoreCase("ajouter")){
                     // On concatène les listes de cartes troupes si la liste initiale n'est pas vide
                     // On ajoute les cartes dans la liste drectement, sinon
-                    if(lot.getAlct() != null){lot.getAlct().addAll(this.choixDesCartesTroupes());}
-                    else{lot.setAlct(this.choixDesCartesTroupes());}
+                    ArrayList<CarteTroupe> alctroupe = this.choixDesCartesTroupes();
+                    if(alctroupe != null){
+                        if(lot.getAlct() != null){lot.getAlct().addAll(alctroupe);}
+                        else{lot.setAlct(alctroupe);}
+                    }
                     // Idem mais pour les cartes kokus
-                    if(lot.getAlk() != null){lot.getAlk().addAll(this.choixDesCartesKokus());}
-                    else{lot.setAlk(this.choixDesCartesKokus());}
+                    ArrayList<Kokus> alkokus = this.choixDesCartesKokus();
+                    if(alkokus != null){
+                        if(lot.getAlk() != null){lot.getAlk().addAll(alkokus);}
+                        else{lot.setAlk(alkokus);}
+                    }
                 }
                 else{
                     lot.remettreCarteDansPiocheTairo(this);
@@ -431,4 +435,6 @@ public class Lot {
             }
         }
     }
+    
+    
 }
